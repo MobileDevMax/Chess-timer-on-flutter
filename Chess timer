@@ -1,0 +1,154 @@
+import 'package:flutter/material.dart';
+import 'dart:async';
+
+void main() {
+  runApp(const MyApp());
+}
+
+class MyApp extends StatelessWidget {
+  const MyApp({Key? key}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      home: ChessTimerScreen(),
+    );
+  }
+}
+
+class ChessTimerScreen extends StatefulWidget {
+  @override
+  _ChessTimerScreenState createState() => _ChessTimerScreenState();
+}
+
+class _ChessTimerScreenState extends State<ChessTimerScreen> {
+  int _time1 = 1800; // 30 minutes
+  int _time2 = 1800; // 30 minutes
+  Timer? _timer1;
+  Timer? _timer2;
+  bool _isRunning1 = false;
+  bool _isRunning2 = false;
+  final TextEditingController _controller = TextEditingController();
+
+  void _setTime() {
+    int newTime = int.tryParse(_controller.text) ?? 30; // Default to 30 minutes if input is invalid
+    setState(() {
+      _time1 = newTime * 60;
+      _time2 = newTime * 60;
+    });
+  }
+
+  void _startTimer1() {
+    if (_isRunning1) return;
+    _stopTimer2();
+    _isRunning1 = true;
+
+    _timer1 = Timer.periodic(Duration(seconds: 1), (timer) {
+      if (_time1 > 0) {
+        _time1--;
+      } else {
+        _stopTimer1();
+      }
+      setState(() {});
+    });
+  }
+
+  void _startTimer2() {
+    if (_isRunning2) return;
+    _stopTimer1();
+    _isRunning2 = true;
+
+    _timer2 = Timer.periodic(Duration(seconds: 1), (timer) {
+      if (_time2 > 0) {
+        _time2--;
+      } else {
+        _stopTimer2();
+      }
+      setState(() {});
+    });
+  }
+
+  void _stopTimer1() {
+    _timer1?.cancel();
+    _isRunning1 = false;
+  }
+
+  void _stopTimer2() {
+    _timer2?.cancel();
+    _isRunning2 = false;
+  }
+
+  void _resetTimer() {
+    _stopTimer1();
+    _stopTimer2();
+    setState(() {
+      _time1 = 1800; // Reset time for player 1
+      _time2 = 1800; // Reset time for player 2
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: const Text('Chess Timer')),
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            // Time input field
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20.0),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Expanded(
+                    child: TextField(
+                      controller: _controller,
+                      decoration: const InputDecoration(
+                        labelText: 'Set Minutes',
+                        border: OutlineInputBorder(),
+                      ),
+                      keyboardType: TextInputType.number,
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+                  ElevatedButton(
+                    onPressed: _setTime,
+                    child: const Text('Set Time'),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 20),
+            // Timer displays
+            Text(
+              'Player 1: ${_time1 ~/ 60}:${(_time1 % 60).toString().padLeft(2, '0')}',
+              style: TextStyle(fontSize: 30),
+            ),
+            const SizedBox(height: 20),
+            Text(
+              'Player 2: ${_time2 ~/ 60}:${(_time2 % 60).toString().padLeft(2, '0')}',
+              style: TextStyle(fontSize: 30),
+            ),
+            const SizedBox(height: 30),
+            // Player buttons
+            ElevatedButton(
+              onPressed: _startTimer1,
+              child: const Text('Player 1', style: TextStyle(fontSize: 24)),
+            ),
+            const SizedBox(height: 20),
+            ElevatedButton(
+              onPressed: _startTimer2,
+              child: const Text('Player 2', style: TextStyle(fontSize: 24)),
+            ),
+            const SizedBox(height: 20),
+            ElevatedButton(
+              onPressed: _resetTimer,
+              child: const Text('Reset Timers', style: TextStyle(fontSize: 24)),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
